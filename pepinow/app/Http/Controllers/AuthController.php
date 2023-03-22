@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use Illuminate\Support\Facades\Password;
 
 class AuthController extends Controller
 {
@@ -87,4 +89,55 @@ class AuthController extends Controller
             ]
         ]);
     }
+
+    public function forgot_password(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users',
+        ]);
+
+        $response = Password::sendResetLink($request->only('email'));
+
+        return $response == Password::RESET_LINK_SENT
+            ? response()->json([
+                'status' => 'success',
+                'message' => 'password reset link has been sent to your email',
+            ])
+            : response()->json([
+                'status' => 'error',
+                'message' => 'unable to send password reset link. Please try again later',
+            ], 500);
+    }
+
+    public function reset_password(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ]);
+
+        $response = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ]);
+
+                $user->save();
+            }
+        );
+
+        return $response == Password::PASSWORD_RESET
+            ? response()->json([
+                'status' => 'success',
+                'message' => 'password has been reset it successfully',
+            ])
+            : response()->json([
+                'status' => 'error',
+                'message' => 'failed when reset password',
+            ], 500);
+    }
 }
+
+
