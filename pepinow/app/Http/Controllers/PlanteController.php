@@ -6,6 +6,7 @@ use App\Models\Plante;
 use App\Http\Requests\StorePlanteRequest;
 use App\Http\Requests\UpdatePlanteRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class PlanteController extends Controller
 {
@@ -45,9 +46,29 @@ class PlanteController extends Controller
      * @param  \App\Http\Requests\StorePlanteRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StorePlanteRequest $request)
+    public function store(StorePlanteRequest $request): JsonResponse
     {
-        //
+        // generate random name for the image
+        $random = rand(0, 100000);
+        $imageName = "Image" . date('ymd') . $random .'.'.$request->image->extension();
+
+        // store the image in storage folder storage/app/public/plantes/images
+        $request->image->storeAs("public/plantes/images", $imageName);
+
+        // override the new name of image to request before storing in database
+        $product_array = $request->all();
+        $product_array["image"] = $imageName;
+        $product_array["user_id"] = Auth::user()->id;
+
+//        dd($product_array);
+
+        $product = Plante::create($product_array);
+
+        return response()->json([
+            "status" => "success",
+            "message" => "product created successfully",
+            "data" => $product,
+        ]);
     }
 
     /**
@@ -56,9 +77,16 @@ class PlanteController extends Controller
      * @param  \App\Models\Plante  $plante
      * @return \Illuminate\Http\Response
      */
-    public function show(Plante $plante)
+    public function show(Plante $plante): JsonResponse
     {
         //
+        $plante->category;
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Plante details',
+            'data' => $plante
+        ]);
+
     }
 
     /**
@@ -79,9 +107,16 @@ class PlanteController extends Controller
      * @param  \App\Models\Plante  $plante
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdatePlanteRequest $request, Plante $plante)
+    public function update(UpdatePlanteRequest $request, Plante $plante): JsonResponse
     {
-        //
+        $plante->update($request->all());
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Plante updated successfully',
+            'data' => $plante
+        ]);
+
+
     }
 
     /**
@@ -93,5 +128,11 @@ class PlanteController extends Controller
     public function destroy(Plante $plante)
     {
         //
+        $plante->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Plante deleted successfully',
+            'data' => $plante
+        ]);
     }
 }
