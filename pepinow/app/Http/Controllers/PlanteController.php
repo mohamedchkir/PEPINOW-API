@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Plante;
 use App\Http\Requests\StorePlanteRequest;
 use App\Http\Requests\UpdatePlanteRequest;
+use Illuminate\Http\JsonResponse;
 
 class PlanteController extends Controller
 {
@@ -13,21 +14,31 @@ class PlanteController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $plantes = Plante::all();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Plantes list',
+            'data' => $plantes
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(): JsonResponse
     {
-        //
+        $plantes = Plante::all();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Plantes list',
+            'data' => $plantes
+        ]);
     }
-
     /**
      * Store a newly created resource in storage.
      *
