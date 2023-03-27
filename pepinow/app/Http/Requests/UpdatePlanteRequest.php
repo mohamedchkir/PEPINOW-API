@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\File;
 
 class UpdatePlanteRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class UpdatePlanteRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,12 @@ class UpdatePlanteRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            "title" => "required",
+            "price" => ["required", "numeric", "regex:/^\d+(\.\d{1,2})?$/"],
+            "discount" => ["required", "min:0", "max:100"],
+            "image" => [File::image()->max(12 * 1024)],
+            "description" => "required",
+            "category_id" => ["required", "integer", "exists:App\Models\Category,id"],
         ];
     }
 }
