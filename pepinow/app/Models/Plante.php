@@ -16,4 +16,8 @@ class Plante extends Model
         'category_id',
         'user_id',
     ];
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 }

@@ -14,6 +14,20 @@ class PlanteSeeder extends Seeder
      */
     public function run()
     {
-        //
+        //plante seed
+        $plante = new \App\Models\Plante();
+
+        $plante->nom = 'Tomate';
+        $plante->description = 'Tomate';
+        $plante->save();
+
+        $plante->nom = 'Poivron';
+        $plante->description = 'Poivron';
+        $plante->save();
+
+        $plante->nom = 'Courgette';
+        $plante->description = 'Courgette';
+        $plante->save();
+
     }
 }

@@ -3,110 +3,99 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plante;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePlanteRequest;
 use App\Http\Requests\UpdatePlanteRequest;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class PlanteController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index(): JsonResponse
+    public function index()
     {
-        $plantes = Plante::all();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Plantes list',
-            'data' => $plantes
-        ]);
+        if (auth()->user()->hasPermissionTo('view plants')) {
+            $plants = Plante::with('category')->get();
+            return response()->json($plants);
+        }else{
+            return response()->json([
+                'message' => 'You cannot view plants'
+            ], 403);
+        }
     }
-
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StorePlanteRequest  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(StorePlanteRequest $request): JsonResponse
+    public function store(StorePlanteRequest $request)
     {
-        // generate random name for the image
-        $random = rand(0, 100000);
-        $imageName = "Image" . date('ymd') . $random .'.'.$request->image->extension();
-
-        // store the image in storage folder storage/app/public/plantes/images
-        $request->image->storeAs("public/plantes/image", $imageName);
-
-        // override the new name of image to request before storing in database
-        $product_array = $request->all();
-        $product_array["image"] = $imageName;
-        $product_array["user_id"] = Auth::user()->id;
-
-//        dd($product_array);
-
-        $product = Plante::create($product_array);
-
-        return response()->json([
-            "status" => "success",
-            "message" => "product created successfully",
-            "data" => $product,
-        ]);
+        if (auth()->user()->hasPermissionTo('create plants')) {
+            $validated = $request->validated();
+            $validated["user_id"]=auth()->user()->id;
+            $plante = Plante::create($validated);
+            return response()->json([
+                'message' => 'Plant created successfully',
+                'plant' => $plante
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'You cannot create plants'
+            ], 403);
+        }
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Plante  $plante
-     * @return \Illuminate\Http\Response
      */
-    public function show(Plante $plante): JsonResponse
+    public function show(Plante $plante)
     {
-        $plante->category;
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Plante details',
-            'data' => $plante
-        ]);
+        if (auth()->user()->hasPermissionTo('view plants')) {
 
+            $plante = Plante::with('category')->find($plante->id);
+            return response()->json($plante);
+        }else{
+            return response()->json([
+                'message' => 'You cannot view plants'
+            ], 403);
+        }
     }
+
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdatePlanteRequest  $request
-     * @param  \App\Models\Plante  $plante
-     * @return \Illuminate\Http\Response
      */
-    public function update(UpdatePlanteRequest $request, Plante $plante): JsonResponse
+    public function update(UpdatePlanteRequest $request, Plante $plante)
     {
-        $plante->update($request->all());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Plante updated successfully',
-            'data' => $plante
-        ]);
-
-
+        if (auth()->user()->hasPermissionTo('edit plants')) {
+            $validated = $request->validated();
+            $validated["user_id"]=auth()->user()->id;
+            $plante->update($validated);
+            return response()->json([
+                'message' => 'Plant updated successfully',
+                'plant' => $plante
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'You cannot edit plants'
+            ], 403);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Plante  $plante
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Plante $plante)
     {
-        //
-        $plante->delete();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Plante deleted successfully',
-            'data' => $plante
-        ]);
+        if (auth()->user()->hasPermissionTo('delete plants')) {
+            $plante->delete();
+            return response()->json([
+                'message' => 'Plant deleted successfully',
+                'plant' => $plante
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'You cannot delete plants'
+            ], 403);
+        }
     }
 }

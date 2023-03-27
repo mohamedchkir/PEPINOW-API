@@ -3,114 +3,110 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
-use Nette\Utils\Json;
-use Illuminate\Http\JsonResponse;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index() : JsonResponse
+
+    public function index()
     {
-        $categories = Category::all();
+        if (auth()->user()->hasPermissionTo('view categories')) {
+        $categories = Category::with('plantes')->get();
         return response()->json($categories);
-    }
+        }else{
+            return response()->json([
+                'message' => 'You cannot view categories'
+            ], 403);
+        }
 
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreCategoryRequest  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(StoreCategoryRequest $request): JsonResponse
+    public function store(StoreCategoryRequest $request)
     {
-         $categories = Category::create($request->all());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category created successfully',
-            'data' => $categories
-        ]);
+        if (auth()->user()->hasPermissionTo('create categories')) {
+            // validate the name using the StoreCategoryRequest
+            $validated = $request->validated();
+            // create a new category
+            $category = Category::create($validated);
+            // return the new category
+            return response()->json([
+                'message' => 'Category created successfully',
+                'category' => $category
+            ]);}
+        else{
+            return response()->json([
+                'message' => 'You cannot create categories'
+            ], 403);
+        }
 
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
      */
     public function show(Category $category)
     {
-        //
-        $category = Category::find($category->id);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category found successfully',
-            'data' => $category
-        ]);
+        if (auth()->user()->hasPermissionTo('view categories')) {
+            $category = Category::with('plantes')->findOrFail($category->id);
+            if (!$category) {
+                # code...
+                return response()->json([
+                    'message' => 'Category not found'
+                ]);
+            }
+            return response()->json($category);
+        }else{
+            return response()->json([
+                'message' => 'You cannot view categories'
+            ], 403);
+        }
 
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Category $category)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateCategoryRequest  $request
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
      */
     public function update(UpdateCategoryRequest $request, Category $category)
     {
-        //
-        $category->update($request->all());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category updated successfully',
-            'data' => $category
-        ]);
-
+        if (auth()->user()->hasPermissionTo('edit categories')) {
+            $validated = $request->validated();
+            $category->update($validated);
+            return response()->json([
+                'message' => 'Category updated successfully',
+                'category' => $category
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'You cannot edit categories'
+            ], 403);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
      */
     public function destroy(Category $category)
     {
-        //
-        $category->delete();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category deleted successfully',
-            'data' => $category
-        ]);
+        if (auth()->user()->hasPermissionTo('delete categories')) {
+            $category = Category::findOrFail($category->id);
+            if (!$category) {
+                return response()->json([
+                    'message' => 'Category not found'
+                ]);
+            }
+            $category->delete();
+            return response()->json([
+                'message' => 'Category deleted successfully'
+            ]);
+        }else{
+            return response()->json([
+                'message' => 'You cannot delete categories'
+            ], 403);
+        }
     }
 }

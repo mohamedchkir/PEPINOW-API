@@ -12,4 +12,8 @@ class Category extends Model
     protected $fillable = [
         'name',
     ];
+    public function plantes()
+    {
+        return $this->hasMany(Plante::class);
+    }
 }
