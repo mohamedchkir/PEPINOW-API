@@ -27,20 +27,6 @@ class PlanteController extends Controller
 
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create(): JsonResponse
-    {
-        $plantes = Plante::all();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Plantes list',
-            'data' => $plantes
-        ]);
-    }
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StorePlanteRequest  $request
@@ -53,7 +39,7 @@ class PlanteController extends Controller
         $imageName = "Image" . date('ymd') . $random .'.'.$request->image->extension();
 
         // store the image in storage folder storage/app/public/plantes/images
-        $request->image->storeAs("public/plantes/images", $imageName);
+        $request->image->storeAs("public/plantes/image", $imageName);
 
         // override the new name of image to request before storing in database
         $product_array = $request->all();
@@ -79,7 +65,6 @@ class PlanteController extends Controller
      */
     public function show(Plante $plante): JsonResponse
     {
-        //
         $plante->category;
         return response()->json([
             'status' => 'success',
@@ -87,17 +72,6 @@ class PlanteController extends Controller
             'data' => $plante
         ]);
 
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Plante  $plante
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Plante $plante)
-    {
-        //
     }
 
     /**

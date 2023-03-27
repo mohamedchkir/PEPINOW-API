@@ -27,7 +27,6 @@ class UpdatePlanteRequest extends FormRequest
         return [
             "title" => "required",
             "price" => ["required", "numeric", "regex:/^\d+(\.\d{1,2})?$/"],
-            "discount" => ["required", "min:0", "max:100"],
             "image" => [File::image()->max(12 * 1024)],
             "description" => "required",
             "category_id" => ["required", "integer", "exists:App\Models\Category,id"],
